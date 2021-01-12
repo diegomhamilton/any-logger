@@ -72,7 +72,7 @@ typedef BUFFER_STRUCT_DEF(data_t, uint8_t, WRITE_BUFFER_SIZE) data_buffer_t;
     void (*_signal)(void)
 
 #define base_logger_attributes                                               \
-    logger_status_t status;                                                  \
+    volatile logger_status_t status;                                                  \
     /* Each bit represents a channel. If a bit at BIT_POS is equal to 1,     \
      * there is a channel registered with ID equal to BIT_POS. */            \
     uint64_t registered_channels;                                            \
