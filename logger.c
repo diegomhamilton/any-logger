@@ -14,6 +14,7 @@ base_logger_t *logger_init(base_logger_t *logger, uint8_t no_channels) {
 }
 
 base_channel_t *logger_register(base_logger_t *logger, char *name, base_channel_t *channel) {
+    //TODO: add verification of logger->status
     /*TODO: Replace these assigns by registering logic using registered_channels variable */
     logger->registered_channels |= 1;
     channel->id = 1;
