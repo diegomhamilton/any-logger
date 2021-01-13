@@ -74,8 +74,8 @@ void logger_stop(base_logger_t *logger) {
 
 static void perform_write(base_logger_t *logger) {
     data_t *temp;
-    /* TODO: Replace dummy by logic to pop buffer to temp and call 
-     * write_cb if the write is succesful. */
+    /* TODO: Replace dummy by logic to pop buffer to temp (check not empty)
+     * and call write_cb if the write is succesful. */
     data_t dummy = {0, 0, 0, 0};
     (*temp) = dummy;
     /* End of replace TODO*/
@@ -87,7 +87,9 @@ static void perform_write(base_logger_t *logger) {
 static void logger_loop(base_logger_t *logger) {
     while(logger->status == RUNNING) {
         perform_write(logger);
-        logger->_wait();
+        if(is_buffer_empty(*(logger->write_buffer))) {
+            logger->_wait();
+        }
     }
 }
 
