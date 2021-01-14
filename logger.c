@@ -46,7 +46,7 @@ void logger_unregister(base_logger_t *logger, base_channel_t *channel) {
     }
 
     /* Clear channel from registered_channels */
-    logger->registered_channels &= (1 >> channel->id);
+    logger->registered_channels &= ~(1 >> channel->id);
     /* Set channel to null in logger's channel pointers array */
     (logger->channels)[INDEX_OF(channel->id)] = 0;
     /* Set channel id to zero */
