@@ -1,9 +1,15 @@
 #include <stdio.h>
 #include <pthread.h>
+#ifdef __APPLE__
+#include <dispatch/dispatch.h>
+#else
 #include <semaphore.h>
+#endif
+#include <unistd.h>
 #include "logger.h"
 
 #define print() printf("%s\r\n", __func__);
+#define exit() pthread_exit( NULL );
 
 op_res_t logger_test_init(void);
 void logger_test_start(char *destination);
@@ -11,12 +17,19 @@ void logger_test_stop(void);
 op_res_t logger_test_write(data_t *data);
 void logger_test_wait(void);
 void logger_test_signal(void);
+void logger_test_lock(void);
+void logger_test_unlock(void);
+
+void write_performed() {
+    print();
+}
 
 static data_buffer_t write_buffer;
 
 #define NO_OF_CHANNELS 8
 
 static base_channel_t channels[NO_OF_CHANNELS];
+base_channel_t *channels_ptr = channels;
 
 static char logger_test_destination[20] = "logger_test_stream";
 
@@ -27,38 +40,66 @@ static base_logger_t logger = {
     ._write = &logger_test_write,
     ._wait = &logger_test_wait,
     ._signal = &logger_test_signal,
+    ._lock = &logger_test_lock,
+    ._unlock = &logger_test_unlock,
     .status = 0,
     .registered_channels = 0,
-    .channels = &channels,
+    .channels = &channels_ptr,
     .no_channels = NO_OF_CHANNELS,
     .destination = logger_test_destination,
     .write_buffer = &write_buffer
 };
 
 static char channel1_test_name[10] = "channel1";
+static char channel2_test_name[10] = "channel2";
+static char channel3_test_name[10] = "channel3";
 
 static base_channel_t channel1;
+static base_channel_t channel2;
+static base_channel_t channel3;
 
 /* OS section */
+#ifdef __APPLE__
+dispatch_semaphore_t write_available;
+#else
 sem_t write_available;
+#endif
+pthread_mutex_t write_lock;
 pthread_t logger_th;
+pthread_t ch1_th, ch2_th, ch3_th;
 void *logger_thread(void *arg);
+void *channel1_thread(void *arg);
+void *channel2_thread(void *arg);
+void *channel3_thread(void *arg);
 /* End of OS section */
+
+uint8_t dummy1[10] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+uint8_t dummy2[10] = {1, 10, 20, 30, 40, 50, 60, 70, 80, 90};
+uint8_t dummy3[10] = {10, 11, 12, 13, 14, 15, 16, 17, 18, 19};
 
 int main(void) {
     logger_init(&logger, NO_OF_CHANNELS);
-    printf("sizeof() logger: %ld\r\n", sizeof(channel1));
     logger_register(&logger, channel1_test_name, &channel1);
-    printf("Channel ID after register: %d\r\n", channel1.id);
-    logger_unregister(&logger, &channel1);
-    printf("Channel ID after unregister: %d\r\n", channel1.id);
-    logger_register(&logger, channel1_test_name, &channel1);
-    printf("Channel ID after register: %d\r\n", channel1.id);
+    logger_register(&logger, channel2_test_name, &channel2);
+    logger_register(&logger, channel3_test_name, &channel3);
 
     int err;
-    sem_init(&write_available, 0, 1);
+    #ifdef __APPLE__
+    write_available = dispatch_semaphore_create(0);
+    #else
+    sem_init(&write_available, 0, 0);
+    #endif
+    pthread_mutex_init(&write_lock, NULL);
     err = pthread_create(&logger_th, NULL, logger_thread, NULL);
-    pthread_join(&logger_th, NULL);
+    err = pthread_create(&ch1_th, NULL, channel1_thread, NULL);
+    err = pthread_create(&ch2_th, NULL, channel2_thread, NULL);
+    err = pthread_create(&ch3_th, NULL, channel3_thread, NULL);
+
+    pthread_join(ch1_th, NULL);
+    pthread_join(ch2_th, NULL);
+    logger_stop(&logger);
+    pthread_join(logger_th, NULL);
+    pthread_mutex_destroy(&write_lock);
 
     return 0;
 }
@@ -80,21 +121,78 @@ void logger_test_stop(void) {
 
 op_res_t logger_test_write(data_t *data) {
     print();
+    uint8_t *dummy = data->data;
+    printf("channel %d: ", data->id);
+    for(int i=0; i < data->size; i++) {
+        printf("%d, ", *(dummy + i));
+    }
+    printf("\r\n");
     return SUCCESS;
 }
 
 void logger_test_wait(void) {
     print();
+    #ifdef __APPLE__
+    dispatch_semaphore_wait(write_available, DISPATCH_TIME_FOREVER);
+    #else
     sem_wait(&write_available);
+    #endif
     return;
 }
 
 void logger_test_signal(void) {
     print();
+    #ifdef __APPLE__
+    dispatch_semaphore_signal(write_available);
+    #else
     sem_post(&write_available);
+    #endif
+    return;
+}
+
+void logger_test_lock(void) {
+    print();
+    pthread_mutex_lock(&write_lock);
+    return;
+}
+
+void logger_test_unlock(void) {
+    print();
+    pthread_mutex_unlock(&write_lock);
     return;
 }
 
 void *logger_thread(void *arg) {
     logger_start(&logger, logger_test_destination);
+    exit();
+}
+
+void *channel1_thread(void *arg) {
+
+    for(int i=0; i < 3; i++) {
+        sleep(2);
+        print();
+        logger_write_async(&logger, channel1.id, dummy1, 10, write_performed);
+    }
+    exit()
+}
+
+void *channel2_thread(void *arg) {
+
+    for(int i=0; i < 3; i++) {
+        sleep(2);
+        print();
+        logger_write_async(&logger, channel2.id, dummy2, 10, write_performed);
+    }
+    exit();
+}
+
+void *channel3_thread(void *arg) {
+
+    for(int i=0; i < 3; i++) {
+        sleep(2);
+        print();
+        logger_write_async(&logger, channel3.id, dummy3, 10, write_performed);
+    }
+    exit();
 }

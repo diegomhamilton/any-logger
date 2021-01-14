@@ -2,6 +2,7 @@
 #define LOGGER_H
 
 #include <stdint.h>
+#define BUFFER_POP_EMPTY_ACTION(buf, c)
 #include "buffer.h"
 #include "channel.h"
 
@@ -69,7 +70,10 @@ typedef BUFFER_STRUCT_DEF(data_t, uint8_t, WRITE_BUFFER_SIZE) data_buffer_t;
      * used by the application. This must signal the _wait function provided \
      *                                                                       \
      * Note: Must not be NULL */                                             \
-    void (*_signal)(void)
+    void (*_signal)(void);   \
+    /*TODO: Add description for lock and unlock functions */ \
+    void (*_lock)(void); \
+    void (*_unlock)(void)
 
 #define base_logger_attributes                                               \
     volatile logger_status_t status;                                                  \
@@ -83,7 +87,7 @@ typedef BUFFER_STRUCT_DEF(data_t, uint8_t, WRITE_BUFFER_SIZE) data_buffer_t;
     /* Store the save location. Used to differentiate loggers. */            \
     char *destination;                                                       \
     /* Buffer of data_t structures to be written by the logger. */           \
-    data_buffer_t *write_buffer
+    volatile data_buffer_t *write_buffer
 
 #define base_logger_fields \
     base_logger_functions; \
