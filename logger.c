@@ -1,4 +1,5 @@
 #include "logger.h"
+#include "channel.h"
 #include "buffer.h"
 
 base_logger_t *logger_init(base_logger_t *logger, uint8_t no_channels) {
@@ -13,12 +14,19 @@ base_logger_t *logger_init(base_logger_t *logger, uint8_t no_channels) {
     return logger;
 }
 
-base_channel_t *logger_register(base_logger_t *logger, char *name, base_channel_t *channel) {
-    //TODO: add verification of logger->status
-    /*TODO: Replace these assigns by registering logic using registered_channels variable */
+channel_id_t register_new_channel(base_logger_t *logger) {
     logger->registered_channels |= 1;
-    channel->id = 1;
-    /*End of TODO */
+    
+    return 1;
+}
+
+base_channel_t *logger_register(base_logger_t *logger, char *name, base_channel_t *channel) {
+    /* Cannot register channel while logger is running, returns the channel as it is */
+    if (logger->status != IDLE) {
+        return channel;
+    }
+
+    channel->id = register_new_channel(logger);
     channel->name = name;
     if (channel->id < logger->no_channels) {
         logger->channels[INDEX_OF(channel->id)] = channel;
@@ -53,9 +61,8 @@ void logger_write_async(base_logger_t *logger, channel_id_t id, uint8_t *data, u
     };
 
     buffer_push(*(logger->write_buffer), temp, res);
-    if (res == 0) {
-        logger->_signal();
-    }
+    //TODO: Add condition to only call _signal() if push was successful
+    logger->_signal();
 }
 
 void logger_start(base_logger_t *logger, char *destination) {
@@ -73,23 +80,20 @@ void logger_stop(base_logger_t *logger) {
 }
 
 static void perform_write(base_logger_t *logger) {
-    data_t *temp;
-    /* TODO: Replace dummy by logic to pop buffer to temp (check not empty)
-     * and call write_cb if the write is succesful. */
-    data_t dummy = {0, 0, 0, 0};
-    (*temp) = dummy;
-    /* End of replace TODO*/
-    if (logger->_write(temp) == SUCCESS) {
-        temp->write_cb(temp->data);
+    data_t temp;
+
+    buffer_pop(*(logger->write_buffer), temp);
+    if (logger->_write(&temp) == SUCCESS) {
+        temp.write_cb(temp.data);
     }
 }
 
 static void logger_loop(base_logger_t *logger) {
     while(logger->status == RUNNING) {
-        perform_write(logger);
         if(is_buffer_empty(*(logger->write_buffer))) {
             logger->_wait();
         }
+        perform_write(logger);
     }
 }
 
