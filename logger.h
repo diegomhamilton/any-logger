@@ -2,6 +2,7 @@
 #define LOGGER_H
 
 #include <stdint.h>
+#define BUFFER_POP_EMPTY_ACTION(buf, c)
 #include "buffer.h"
 #include "channel.h"
 
@@ -83,7 +84,7 @@ typedef BUFFER_STRUCT_DEF(data_t, uint8_t, WRITE_BUFFER_SIZE) data_buffer_t;
     /* Store the save location. Used to differentiate loggers. */            \
     char *destination;                                                       \
     /* Buffer of data_t structures to be written by the logger. */           \
-    data_buffer_t *write_buffer
+    volatile data_buffer_t *write_buffer
 
 #define base_logger_fields \
     base_logger_functions; \
