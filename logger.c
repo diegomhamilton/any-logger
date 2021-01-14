@@ -108,7 +108,3 @@ static void logger_loop(base_logger_t *logger) {
         }
     }
 }
-
-// int main(void) {
-//     return 0;
-// }
