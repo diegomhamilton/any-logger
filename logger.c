@@ -1,6 +1,7 @@
 #include "logger.h"
 #include "channel.h"
 #include "buffer.h"
+#include <stdio.h>
 
 base_logger_t *logger_init(base_logger_t *logger, uint8_t no_channels) {
     if (logger->_init() == SUCCESS) {
@@ -15,6 +16,7 @@ base_logger_t *logger_init(base_logger_t *logger, uint8_t no_channels) {
 }
 
 channel_id_t register_new_channel(base_logger_t *logger) {
+    // TODO: implement register logic
     logger->registered_channels |= 1;
     
     return 1;
@@ -60,7 +62,9 @@ void logger_write_async(base_logger_t *logger, channel_id_t id, uint8_t *data, u
         .write_cb = cb
     };
 
+    logger->_lock();
     buffer_push(*(logger->write_buffer), temp, res);
+    logger->_unlock();
     //TODO: Add condition to only call _signal() if push was successful
     logger->_signal();
 }
@@ -76,13 +80,18 @@ void logger_start(base_logger_t *logger, char *destination) {
 
 void logger_stop(base_logger_t *logger) {
     logger->status = IDLE;
+    // this is intended to solve an issue where the logger stops but the loop isn't destroyed
+    // logger->_signal();
     logger->_stop();
 }
 
 static void perform_write(base_logger_t *logger) {
     data_t temp;
 
+    // TODO: check if this lock on pop action is really required
+    logger->_lock();
     buffer_pop(*(logger->write_buffer), temp);
+    logger->_unlock();
     if (logger->_write(&temp) == SUCCESS) {
         temp.write_cb(temp.data);
     }
@@ -92,8 +101,11 @@ static void logger_loop(base_logger_t *logger) {
     while(logger->status == RUNNING) {
         if(is_buffer_empty(*(logger->write_buffer))) {
             logger->_wait();
+        } else {
+            // TODO: investigate this issue (signal with flush buffer was leading to pop empty)
+            // verify if empty check at pop makes sense...
+            perform_write(logger);
         }
-        perform_write(logger);
     }
 }
 

@@ -70,7 +70,10 @@ typedef BUFFER_STRUCT_DEF(data_t, uint8_t, WRITE_BUFFER_SIZE) data_buffer_t;
      * used by the application. This must signal the _wait function provided \
      *                                                                       \
      * Note: Must not be NULL */                                             \
-    void (*_signal)(void)
+    void (*_signal)(void);   \
+    /*TODO: Add description for lock and unlock functions */ \
+    void (*_lock)(void); \
+    void (*_unlock)(void)
 
 #define base_logger_attributes                                               \
     volatile logger_status_t status;                                                  \

@@ -12,6 +12,8 @@ void logger_test_stop(void);
 op_res_t logger_test_write(data_t *data);
 void logger_test_wait(void);
 void logger_test_signal(void);
+void logger_test_lock(void);
+void logger_test_unlock(void);
 
 void write_performed() {
     print();
@@ -33,6 +35,8 @@ static base_logger_t logger = {
     ._write = &logger_test_write,
     ._wait = &logger_test_wait,
     ._signal = &logger_test_signal,
+    ._lock = &logger_test_lock,
+    ._unlock = &logger_test_unlock,
     .status = 0,
     .registered_channels = 0,
     .channels = &channels_ptr,
@@ -49,6 +53,7 @@ static base_channel_t channel2;
 
 /* OS section */
 sem_t write_available;
+pthread_mutex_t write_lock;
 pthread_t logger_th;
 pthread_t ch1_th, ch2_th;
 void *logger_thread(void *arg);
@@ -63,6 +68,7 @@ int main(void) {
 
     int err;
     sem_init(&write_available, 0, 0);
+    pthread_mutex_init(&write_lock, NULL);
     err = pthread_create(&logger_th, NULL, logger_thread, NULL);
     err = pthread_create(&ch1_th, NULL, channel1_thread, NULL);
     err = pthread_create(&ch2_th, NULL, channel2_thread, NULL);
@@ -71,6 +77,7 @@ int main(void) {
     pthread_join(ch2_th, NULL);
     logger_stop(&logger);
     pthread_join(logger_th, NULL);
+    pthread_mutex_destroy(&write_lock);
 
     return 0;
 }
@@ -106,6 +113,18 @@ void logger_test_wait(void) {
 void logger_test_signal(void) {
     print();
     sem_post(&write_available);
+    return;
+}
+
+void logger_test_lock(void) {
+    print();
+    pthread_mutex_lock(&write_lock);
+    return;
+}
+
+void logger_test_unlock(void) {
+    print();
+    pthread_mutex_unlock(&write_lock);
     return;
 }
 
