@@ -62,9 +62,9 @@ void logger_write_async(base_logger_t *logger, channel_id_t id, uint8_t *data, u
         .write_cb = cb
     };
 
-    logger->_lock();
+    if(logger->_lock) logger->_lock();
     buffer_push(*(logger->write_buffer), temp, res);
-    logger->_unlock();
+    if(logger->_unlock) logger->_unlock();
     //TODO: Add condition to only call _signal() if push was successful
     logger->_signal();
 }
@@ -72,7 +72,7 @@ void logger_write_async(base_logger_t *logger, channel_id_t id, uint8_t *data, u
 void logger_start(base_logger_t *logger, char *destination) {
     if (logger->status == IDLE) {
         buffer_reset(*(logger->write_buffer));
-        logger->_start(destination);
+        if (logger->_start) logger->_start(destination);
         logger->status = RUNNING;
         logger_loop(logger);
     }
@@ -80,20 +80,25 @@ void logger_start(base_logger_t *logger, char *destination) {
 
 void logger_stop(base_logger_t *logger) {
     logger->status = IDLE;
-    // this is intended to solve an issue where the logger stops but the loop isn't destroyed
-    // logger->_signal();
-    logger->_stop();
+    /* this is intended to solve an issue where the logger stops
+     * but the loop isn't destroyed */
+    logger->_signal();
+    if (logger->_stop) logger->_stop();
 }
 
 static void perform_write(base_logger_t *logger) {
     data_t temp;
 
     // TODO: check if this lock on pop action is really required
-    logger->_lock();
+    
+    if(logger->_lock) logger->_lock();
     buffer_pop(*(logger->write_buffer), temp);
-    logger->_unlock();
+    if(logger->_unlock) logger->_unlock();
+
     if (logger->_write(&temp) == SUCCESS) {
-        temp.write_cb(temp.data);
+        if(temp.write_cb) {
+            temp.write_cb(temp.data);
+        }
     }
 }
 
