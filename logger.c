@@ -96,28 +96,24 @@ void logger_stop(base_logger_t *logger) {
 
 static void perform_write(base_logger_t *logger) {
     data_t temp;
-
-    // TODO: check if this lock on pop action is really required
     
-    if(logger->_lock) logger->_lock();
-    buffer_pop(*(logger->write_buffer), temp);
-    if(logger->_unlock) logger->_unlock();
+    if(!is_buffer_empty(*(logger->write_buffer))) {
+        if(logger->_lock) logger->_lock();
+        buffer_pop(*(logger->write_buffer), temp);
+        if(logger->_unlock) logger->_unlock();
 
-    if (logger->_write(&temp) == SUCCESS) {
-        if(temp.write_cb) {
-            temp.write_cb(temp.data);
+        if (logger->_write(&temp) == SUCCESS) {
+            if(temp.write_cb) {
+                temp.write_cb(temp.data);
+            }
         }
+    } else {
+        logger->_wait();
     }
 }
 
 static void logger_loop(base_logger_t *logger) {
     while(logger->status == RUNNING) {
-        if(is_buffer_empty(*(logger->write_buffer))) {
-            logger->_wait();
-        } else {
-            // TODO: investigate this issue (signal with flush buffer was leading to pop empty)
-            // verify if empty check at pop makes sense...
-            perform_write(logger);
-        }
+        perform_write(logger);
     }
 }
