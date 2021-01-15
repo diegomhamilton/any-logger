@@ -16,23 +16,31 @@ base_logger_t *logger_init(base_logger_t *logger, uint8_t no_channels) {
 }
 
 channel_id_t register_new_channel(base_logger_t *logger) {
-    // TODO: implement register logic
-    logger->registered_channels |= 1;
-    
-    return 1;
+    uint64_t regchan = logger->registered_channels;
+    uint8_t temp = 0;
+    channel_id_t id = 0;
+
+    do {
+        temp = (regchan >> id) & 0x01;
+        id += 1;
+    } while(temp != 0 || id == logger->no_channels);
+
+    return id;
 }
 
 base_channel_t *logger_register(base_logger_t *logger, char *name, base_channel_t *channel) {
-    /* Cannot register channel while logger is running, returns the channel as it is */
+    /* Cannot register channel while logger is running, returns NULL */
     if (logger->status != IDLE) {
-        return channel;
+        return 0;
     }
 
     channel->id = register_new_channel(logger);
+    logger->registered_channels |= 1 << INDEX_OF(channel->id);
     channel->name = name;
     if (channel->id < logger->no_channels) {
         logger->channels[INDEX_OF(channel->id)] = channel;
     }
+
     return channel;
 }
 
