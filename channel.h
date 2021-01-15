@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-typedef int8_t channel_id_t;
+typedef uint8_t channel_id_t;
 
 #define INDEX_OF(CHANNEL_ID)    ( (CHANNEL_ID) - 1 )
 
