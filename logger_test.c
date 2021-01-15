@@ -28,23 +28,22 @@ static data_buffer_t write_buffer;
 
 #define NO_OF_CHANNELS 8
 
-static base_channel_t channels[NO_OF_CHANNELS];
-base_channel_t *channels_ptr = channels;
+static base_channel_t *channels[NO_OF_CHANNELS];
 
 static char logger_test_destination[20] = "logger_test_stream";
 
 static base_logger_t logger = {
-    ._init = &logger_test_init,
-    ._start = &logger_test_start,
-    ._stop = &logger_test_stop,
-    ._write = &logger_test_write,
-    ._wait = &logger_test_wait,
-    ._signal = &logger_test_signal,
-    ._lock = &logger_test_lock,
-    ._unlock = &logger_test_unlock,
+    ._init = logger_test_init,
+    ._start = logger_test_start,
+    ._stop = logger_test_stop,
+    ._write = logger_test_write,
+    ._wait = logger_test_wait,
+    ._signal = logger_test_signal,
+    ._lock = logger_test_lock,
+    ._unlock = logger_test_unlock,
     .status = 0,
     .registered_channels = 0,
-    .channels = &channels_ptr,
+    .channels = channels,
     .no_channels = NO_OF_CHANNELS,
     .destination = logger_test_destination,
     .write_buffer = &write_buffer
@@ -74,8 +73,8 @@ void *channel3_thread(void *arg);
 /* End of OS section */
 
 uint8_t dummy1[10] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
-uint8_t dummy2[10] = {1, 10, 20, 30, 40, 50, 60, 70, 80, 90};
-uint8_t dummy3[10] = {10, 11, 12, 13, 14, 15, 16, 17, 18, 19};
+uint8_t dummy2[10] = {10, 11, 12, 13, 14, 15, 16, 17, 18, 19};
+uint8_t dummy3[10] = {20, 21, 22, 23, 24, 25, 26, 27, 28, 29};
 
 int main(void) {
     logger_init(&logger, NO_OF_CHANNELS);
@@ -121,10 +120,9 @@ void logger_test_stop(void) {
 
 op_res_t logger_test_write(data_t *data) {
     print();
-    uint8_t *dummy = data->data;
-    printf("channel %d: ", data->id);
+    printf("channel %d, %s: ", data->id, logger.channels[INDEX_OF(data->id)]->name);
     for(int i=0; i < data->size; i++) {
-        printf("%d, ", *(dummy + i));
+        printf("%d, ", data->data[i]);
     }
     printf("\r\n");
     return SUCCESS;
