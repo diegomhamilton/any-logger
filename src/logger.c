@@ -76,23 +76,6 @@ void logger_write_async(base_logger_t *logger, channel_id_t id, uint8_t *data, u
     logger->_signal();
 }
 
-void logger_start(base_logger_t *logger, char *destination) {
-    if (logger->status == IDLE) {
-        buffer_reset(*(logger->write_buffer));
-        if (logger->_start) logger->_start(destination);
-        logger->status = RUNNING;
-        logger_loop(logger);
-    }
-}
-
-void logger_stop(base_logger_t *logger) {
-    logger->status = IDLE;
-    /* this is intended to solve an issue where the logger stops
-     * but the loop isn't destroyed */
-    logger->_signal();
-    if (logger->_stop) logger->_stop();
-}
-
 static void perform_write(base_logger_t *logger) {
     data_t temp;
     
@@ -115,4 +98,21 @@ static void logger_loop(base_logger_t *logger) {
     while(logger->status == RUNNING) {
         perform_write(logger);
     }
+}
+
+void logger_start(base_logger_t *logger, char *destination) {
+    if (logger->status == IDLE) {
+        buffer_reset(*(logger->write_buffer));
+        if (logger->_start) logger->_start(destination);
+        logger->status = RUNNING;
+        logger_loop(logger);
+    }
+}
+
+void logger_stop(base_logger_t *logger) {
+    logger->status = IDLE;
+    /* this is intended to solve an issue where the logger stops
+     * but the loop isn't destroyed */
+    logger->_signal();
+    if (logger->_stop) logger->_stop();
 }

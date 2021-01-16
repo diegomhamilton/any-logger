@@ -127,8 +127,4 @@ void logger_start(base_logger_t *logger, char *destination);
 /* This function calls _stop from logger. Also set the logger status to IDLE. */
 void logger_stop(base_logger_t *logger);
 
-/* Loop that will execute the write/wait logic. Adding in .h to let this function
- * as the last one on the .c file.*/
-static void logger_loop(base_logger_t *logger);
-
 #endif
