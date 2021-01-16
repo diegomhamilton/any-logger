@@ -1,7 +1,6 @@
 #include "logger.h"
 #include "channel.h"
 #include "buffer.h"
-#include <stdio.h>
 
 base_logger_t *logger_init(base_logger_t *logger, uint8_t no_channels) {
     if (logger->_init() == SUCCESS) {
