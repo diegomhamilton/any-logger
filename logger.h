@@ -6,6 +6,11 @@
 #include "buffer.h"
 #include "channel.h"
 
+#define FAIL 0
+#define SUCCESS 1
+
+typedef uint8_t op_res_t;
+
 typedef enum logger_status
 {
     UNINITIALIZED = 0,
@@ -13,11 +18,6 @@ typedef enum logger_status
     RUNNING
 } logger_status_t;
 
-typedef enum operation_result
-{
-    SUCCESS = 0,
-    FAIL
-} op_res_t;
 
 typedef void (*signal_cb_t)(uint8_t *data);
 
