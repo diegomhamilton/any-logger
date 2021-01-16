@@ -122,8 +122,8 @@ int main(void)
     * Creates application threads.
     */
     logger_thread = chThdCreateStatic(loggerThread, sizeof(loggerThread), NORMALPRIO, LoggerThread, NULL);
-    ch1_thread = chThdCreateStatic(ch1Thread, sizeof(ch1Thread), NORMALPRIO + 1, Ch1Thread, NULL);
-    ch2_thread = chThdCreateStatic(ch2Thread, sizeof(ch2Thread), NORMALPRIO + 1, Ch2Thread, NULL);
+    ch1_thread = chThdCreateStatic(ch1Thread, sizeof(ch1Thread), NORMALPRIO + 3, Ch1Thread, NULL);
+    ch2_thread = chThdCreateStatic(ch2Thread, sizeof(ch2Thread), NORMALPRIO + 2, Ch2Thread, NULL);
     ch3_thread = chThdCreateStatic(ch3Thread, sizeof(ch3Thread), NORMALPRIO + 1, Ch3Thread, NULL);
 
     
@@ -133,6 +133,7 @@ int main(void)
         chThdSleepSeconds(5);
         if (chThdTerminatedX(ch1_thread) && chThdTerminatedX(ch2_thread) && chThdTerminatedX(ch3_thread)) {
             logger_stop(&logger);
+            chprintf((BaseSequentialStream *)&SD2, "Logger Stopped! Status: %d\r\n", logger.status);
         }
     }
 }
