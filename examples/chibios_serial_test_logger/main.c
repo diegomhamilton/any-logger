@@ -19,7 +19,7 @@
 #include "logger.h"
 #include "chprintf.h"
 
-#define print() 
+#define print() chprintf((BaseSequentialStream *) &SD2, "%s\r\n", __FUNCTION__)
 #define exit() chThdExit((msg_t)NULL);
 
 op_res_t chibios_serial_test_logger_init(void);
