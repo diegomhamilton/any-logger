@@ -11,14 +11,14 @@
 #define print() printf("%s\r\n", __func__);
 #define exit() pthread_exit( NULL );
 
-op_res_t logger_test_init(void);
-void logger_test_start(char *destination);
-void logger_test_stop(void);
-op_res_t logger_test_write(data_t *data);
-void logger_test_wait(void);
-void logger_test_signal(void);
-void logger_test_lock(void);
-void logger_test_unlock(void);
+op_res_t test_logger_init(void);
+void test_logger_start(char *destination);
+void test_logger_stop(void);
+op_res_t test_logger_write(data_t *data);
+void test_logger_wait(void);
+void test_logger_signal(void);
+void test_logger_lock(void);
+void test_logger_unlock(void);
 
 void write_performed() {
     print();
@@ -30,22 +30,22 @@ static data_buffer_t write_buffer;
 
 static base_channel_t *channels[NO_OF_CHANNELS];
 
-static char logger_test_destination[20] = "logger_test_stream";
+static char test_logger_destination[20] = "test_logger_stream";
 
 static base_logger_t logger = {
-    ._init = logger_test_init,
-    ._start = logger_test_start,
-    ._stop = logger_test_stop,
-    ._write = logger_test_write,
-    ._wait = logger_test_wait,
-    ._signal = logger_test_signal,
-    ._lock = logger_test_lock,
-    ._unlock = logger_test_unlock,
+    ._init = test_logger_init,
+    ._start = test_logger_start,
+    ._stop = test_logger_stop,
+    ._write = test_logger_write,
+    ._wait = test_logger_wait,
+    ._signal = test_logger_signal,
+    ._lock = test_logger_lock,
+    ._unlock = test_logger_unlock,
     .status = 0,
     .registered_channels = 0,
     .channels = channels,
     .no_channels = NO_OF_CHANNELS,
-    .destination = logger_test_destination,
+    .destination = test_logger_destination,
     .write_buffer = &write_buffer
 };
 
@@ -103,22 +103,22 @@ int main(void) {
     return 0;
 }
 
-op_res_t logger_test_init(void) {
+op_res_t test_logger_init(void) {
     print();
     return SUCCESS;
 }
 
-void logger_test_start(char *destination) {
+void test_logger_start(char *destination) {
     print();
     return;
 }
 
-void logger_test_stop(void) {
+void test_logger_stop(void) {
     print();
     return;
 }
 
-op_res_t logger_test_write(data_t *data) {
+op_res_t test_logger_write(data_t *data) {
     print();
     printf("channel %d, %s: ", data->id, logger.channels[INDEX_OF(data->id)]->name);
     for(int i=0; i < data->size; i++) {
@@ -128,7 +128,7 @@ op_res_t logger_test_write(data_t *data) {
     return SUCCESS;
 }
 
-void logger_test_wait(void) {
+void test_logger_wait(void) {
     print();
     #ifdef __APPLE__
     dispatch_semaphore_wait(write_available, DISPATCH_TIME_FOREVER);
@@ -138,7 +138,7 @@ void logger_test_wait(void) {
     return;
 }
 
-void logger_test_signal(void) {
+void test_logger_signal(void) {
     print();
     #ifdef __APPLE__
     dispatch_semaphore_signal(write_available);
@@ -148,20 +148,20 @@ void logger_test_signal(void) {
     return;
 }
 
-void logger_test_lock(void) {
+void test_logger_lock(void) {
     print();
     pthread_mutex_lock(&write_lock);
     return;
 }
 
-void logger_test_unlock(void) {
+void test_logger_unlock(void) {
     print();
     pthread_mutex_unlock(&write_lock);
     return;
 }
 
 void *logger_thread(void *arg) {
-    logger_start(&logger, logger_test_destination);
+    logger_start(&logger, test_logger_destination);
     exit();
 }
 
