@@ -43,13 +43,15 @@ static void adc_error_callback(ADCDriver *adcp, adcerror_t err) {
     (void)err;
 }
 
+static const uint16_t half_buffer_size = sizeof(adcsample_t) * ANALOG_BUFFER_DEPTH * ANALOG_NO_CHANNELS/2;
+
 static void adc_conv_callback(ADCDriver *adcp) {
     if (adcIsBufferComplete(adcp)) {
         /* Handle DMA full buffer complete */
-        logger_write_async(logger_ptr, analog_channel.id, (uint8_t *) &analog_channel_buffer[ANALOG_BUFFER_DEPTH/2], sizeof(adcsample_t) * ANALOG_BUFFER_DEPTH/2, 0);
+        logger_write_async(logger_ptr, analog_channel.id, (uint8_t *) &analog_channel_buffer[(sizeof(analog_channel_buffer)/sizeof(adcsample_t))/2], half_buffer_size, 0);
     } else {
         /* Handle DMA half buffer complete */
-        logger_write_async(logger_ptr, analog_channel.id, (uint8_t *) &analog_channel_buffer[0], sizeof(adcsample_t) * ANALOG_BUFFER_DEPTH/2, 0);
+        logger_write_async(logger_ptr, analog_channel.id, (uint8_t *) &analog_channel_buffer[0], half_buffer_size, 0);
     }
 }
 
@@ -59,18 +61,22 @@ static void adc_conv_callback(ADCDriver *adcp) {
  * Channels:    IN0.
  */
 static const ADCConversionGroup adcgrpcfg1 = {
-    TRUE,
-    ANALOG_NO_CHANNELS,
-    adc_conv_callback,
-    adc_error_callback,
+    .circular = TRUE,
+    .num_channels = ANALOG_NO_CHANNELS,
+    .end_cb = adc_conv_callback,
+    .error_cb = adc_error_callback,
     /* CFGR1, CFGR2 */
-    (0b0100 << ADC_CFGR_EXTSEL_Pos) | (0b10 << ADC_CFGR_EXTEN_Pos), 0,
+    .cfgr = (0b0100 << ADC_CFGR_EXTSEL_Pos) | (0b10 << ADC_CFGR_EXTEN_Pos),
     /* TR1 */
-    0,
+    .tr1 = 0,
     /* { SMPR1, SMPR2} */
-    {0, 0},
+    .smpr = {0, 0},
     /* { SQR1, SQR2, SQR3, SQR4 }*/
-    { ADC_SQR1_NUM_CH(1) | ADC_SQR1_SQ1_N(ADC_CHANNEL_IN1), 0, 0, 0 }
+    .sqr = { ADC_SQR1_NUM_CH(ANALOG_NO_CHANNELS)
+        | ADC_SQR1_SQ1_N(ADC_CHANNEL_IN1)
+        | ADC_SQR1_SQ2_N(ADC_CHANNEL_IN2)
+        | ADC_SQR1_SQ3_N(ADC_CHANNEL_IN3)
+        | ADC_SQR1_SQ4_N(ADC_CHANNEL_IN4), 0, 0, 0 }
 };
 
 void analog_channel_register(base_logger_t *logger) {
