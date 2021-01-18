@@ -20,7 +20,7 @@
 #include "chprintf.h"
 #include "analog_channel.h"
 
-#define print() chprintf((BaseSequentialStream *) &SD2, "%s\r\n", __FUNCTION__)
+#define print() //chprintf((BaseSequentialStream *) &SD2, "%s\r\n", __FUNCTION__)
 #define exit() chThdExit((msg_t)NULL);
 
 op_res_t chibios_serial_logger_init(void);

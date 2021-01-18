@@ -46,10 +46,10 @@ static void adc_error_callback(ADCDriver *adcp, adcerror_t err) {
 static void adc_conv_callback(ADCDriver *adcp) {
     if (adcIsBufferComplete(adcp)) {
         /* Handle DMA full buffer complete */
-        logger_write_async(logger_ptr, analog_channel.id, (uint8_t *) &analog_channel_buffer[ANALOG_BUFFER_DEPTH/2], ANALOG_BUFFER_DEPTH/2, 0);
+        logger_write_async(logger_ptr, analog_channel.id, (uint8_t *) &analog_channel_buffer[ANALOG_BUFFER_DEPTH/2], sizeof(adcsample_t) * ANALOG_BUFFER_DEPTH/2, 0);
     } else {
         /* Handle DMA half buffer complete */
-        logger_write_async(logger_ptr, analog_channel.id, (uint8_t *) &analog_channel_buffer[0], ANALOG_BUFFER_DEPTH/2, 0);
+        logger_write_async(logger_ptr, analog_channel.id, (uint8_t *) &analog_channel_buffer[0], sizeof(adcsample_t) * ANALOG_BUFFER_DEPTH/2, 0);
     }
 }
 
