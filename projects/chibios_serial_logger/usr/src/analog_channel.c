@@ -65,18 +65,19 @@ static const ADCConversionGroup adcgrpcfg1 = {
     .num_channels = ANALOG_NO_CHANNELS,
     .end_cb = adc_conv_callback,
     .error_cb = adc_error_callback,
-    /* CFGR1, CFGR2 */
+    /* CFGR */
     .cfgr = (0b0100 << ADC_CFGR_EXTSEL_Pos) | (0b10 << ADC_CFGR_EXTEN_Pos),
     /* TR1 */
     .tr1 = 0,
     /* { SMPR1, SMPR2} */
     .smpr = {0, 0},
-    /* { SQR1, SQR2, SQR3, SQR4 }*/
+    /* { SQR1, SQR2, SQR3, SQR4 } */
     .sqr = { ADC_SQR1_NUM_CH(ANALOG_NO_CHANNELS)
-        | ADC_SQR1_SQ1_N(ADC_CHANNEL_IN1)
-        | ADC_SQR1_SQ2_N(ADC_CHANNEL_IN2)
-        | ADC_SQR1_SQ3_N(ADC_CHANNEL_IN3)
-        | ADC_SQR1_SQ4_N(ADC_CHANNEL_IN4), 0, 0, 0 }
+        | ADC_SQR1_SQ1_N(ADC_CHANNEL_IN1)   // mapped to A0 (PA_0)
+        | ADC_SQR1_SQ2_N(ADC_CHANNEL_IN2)   // mapped to A1 (PA_1)
+        | ADC_SQR1_SQ3_N(ADC_CHANNEL_IN7)   // mapped to A4 (PC_1)
+        | ADC_SQR1_SQ4_N(ADC_CHANNEL_IN6),  // mapped to A5 (PC_0)
+        0, 0, 0 }
 };
 
 void analog_channel_register(base_logger_t *logger) {
