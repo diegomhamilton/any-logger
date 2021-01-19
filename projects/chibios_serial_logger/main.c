@@ -132,7 +132,7 @@ op_res_t chibios_serial_logger_write(data_t *data)
     chprintf((BaseSequentialStream *)&SD2, "channel %d, %s: \r\n", data->id, logger.channels[INDEX_OF(data->id)]->name);
     for (int i = 0; i < data->size; i += 2)
     {
-        chprintf((BaseSequentialStream *)&SD2, "%x, %x\t", data->data[i], data->data[i+1]);
+        chprintf((BaseSequentialStream *)&SD2, "%d\t", data->data[i] + (data->data[i+1] << 8));
         if (((i+2) % 8) == 0) {
             sdPut(&SD2, '\r');
             sdPut(&SD2, '\n');
