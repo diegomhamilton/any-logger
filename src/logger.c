@@ -6,6 +6,7 @@ base_logger_t *logger_init(base_logger_t *logger, uint8_t no_channels) {
     if (logger->_init() == SUCCESS) {
         logger->status = IDLE;
         logger->no_channels = no_channels;
+        logger->registered_channels = 0;
     } else {
         logger->status = UNINITIALIZED;
         logger->no_channels = 0;
