@@ -91,16 +91,17 @@ int main(void)
     logger_init(&logger, NO_OF_CHANNELS);
     analog_channel_register(&logger);
 
-    chBSemObjectInit(&write_available, false);
     /*
-    * Creates application threads.
+    * Creates application thread and initialize semaphore.
     */
+    chBSemObjectInit(&write_available, false);
     logger_thread = chThdCreateStatic(loggerThread, sizeof(loggerThread), NORMALPRIO, LoggerThread, NULL);
     
+    /* Blinker main thread to verify logger functionality */
     while (true)
     {
-        chprintf((BaseSequentialStream *)&SD2, "i'm alive\r\n");
-        chThdSleepSeconds(5);
+        palTogglePad(GPIOA, GPIOA_LED_GREEN);
+        chThdSleepSeconds(1);
     }
 }
 
@@ -127,10 +128,15 @@ void chibios_serial_logger_stop(void)
 op_res_t chibios_serial_logger_write(data_t *data)
 {
     print();
-    chprintf((BaseSequentialStream *)&SD2, "channel %d, %s: ", data->id, logger.channels[INDEX_OF(data->id)]->name);
-    for (int i = 0; i < data->size; i++)
+
+    chprintf((BaseSequentialStream *)&SD2, "channel %d, %s: \r\n", data->id, logger.channels[INDEX_OF(data->id)]->name);
+    for (int i = 0; i < data->size; i += 2)
     {
-        chprintf((BaseSequentialStream *)&SD2, "%d, ", data->data[i]);
+        chprintf((BaseSequentialStream *)&SD2, "%d\t", data->data[i] + (data->data[i+1] << 8));
+        if (((i+2) % 8) == 0) {
+            sdPut(&SD2, '\r');
+            sdPut(&SD2, '\n');
+        }
     }
     chprintf((BaseSequentialStream *)&SD2, "\r\n");
 

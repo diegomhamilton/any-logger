@@ -11,8 +11,8 @@
 /* ADC section */
 /* ----------- */
 
-#define ANALOG_BUFFER_DEPTH         512
-#define ANALOG_NO_CHANNELS          1
+#define ANALOG_BUFFER_DEPTH         256
+#define ANALOG_NO_CHANNELS          4
 
 void analog_channel_register(base_logger_t *logger);
 void analog_channel_start(void);
