@@ -104,6 +104,7 @@ static void logger_loop(base_logger_t *logger) {
 void logger_start(base_logger_t *logger, char *destination) {
     if (logger->status == IDLE) {
         buffer_reset(*(logger->write_buffer));
+        logger->destination = destination;
         if (logger->_start) logger->_start(destination);
         logger->status = RUNNING;
         logger_loop(logger);
