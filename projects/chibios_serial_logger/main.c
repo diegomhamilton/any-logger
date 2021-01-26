@@ -108,6 +108,7 @@ int main(void)
 op_res_t chibios_serial_logger_init(void)
 {
     print();
+    analog_channel_init();
     return SUCCESS;
 }
 

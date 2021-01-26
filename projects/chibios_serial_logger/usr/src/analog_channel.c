@@ -1,24 +1,24 @@
 #include "analog_channel.h"
 
 /* Callback for Timer operation */
-static void timer_cb(void) {
+static void timer_cb(GPTDriver *gptp) {
     //TODO: Implement periodic action
-    return;
+    (void) gptp;
 }
 
 /* Timer 3 Configuration. */
 static const GPTConfig xTIM3Config = {
     /* Frequency */
-    TIMER_FREQUENCY,
+    .frequency = TIMER_FREQUENCY,
     /* Callback */
-    timer_cb,
-    0,
+    .callback = timer_cb,
+    .cr2 = 0,
     /* Dier */
-    TIM_DIER_TIE | TIM_DIER_UIE
+    .dier = TIM_DIER_TIE | TIM_DIER_UIE
 };
 
 /* Initialize Timer 3 with TRGO enabled */
-static void timer_init() {
+static void timer_init(void) {
     gptObjectInit(&GPTD3);
     gptStart(&GPTD3, &xTIM3Config);
     /* TRGO Event */
@@ -80,14 +80,22 @@ static const ADCConversionGroup adcgrpcfg1 = {
         0, 0, 0 }
 };
 
+void analog_channel_init(void) {
+    adcStart(&ADCD1, NULL);
+    timer_init();
+}
+
 void analog_channel_register(base_logger_t *logger) {
     logger_ptr = logger;
     logger_register(logger_ptr, analog_channel_name, &analog_channel);
 }
 
 void analog_channel_start(void) {
-    adcStart(&ADCD1, NULL);
-    timer_init();
     timer_start();
     adcStartConversion(&ADCD1, &adcgrpcfg1, &analog_channel_buffer[0], ANALOG_BUFFER_DEPTH);
+}
+
+void analog_channel_stop(void) {
+    gptStopTimer(&GPTD3);
+    adcStopConversion(&ADCD1);
 }

@@ -14,6 +14,7 @@
 #define ANALOG_BUFFER_DEPTH         256
 #define ANALOG_NO_CHANNELS          4
 
+void analog_channel_init(void);
 void analog_channel_register(base_logger_t *logger);
 void analog_channel_start(void);
 
