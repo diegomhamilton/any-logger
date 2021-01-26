@@ -19,6 +19,7 @@
 #include "logger.h"
 #include "chprintf.h"
 #include "analog_channel.h"
+#include "can_channel.h"
 
 #define print() //chprintf((BaseSequentialStream *) &SD2, "%s\r\n", __FUNCTION__)
 #define exit() chThdExit((msg_t)NULL);
@@ -90,6 +91,8 @@ int main(void)
 
     logger_init(&logger, NO_OF_CHANNELS);
     analog_channel_register(&logger);
+    can_channel_register(&logger);
+
 
     /*
     * Creates application thread and initialize semaphore.
@@ -109,6 +112,7 @@ op_res_t chibios_serial_logger_init(void)
 {
     print();
     analog_channel_init();
+    can_channel_init();
     return SUCCESS;
 }
 
@@ -117,6 +121,7 @@ void chibios_serial_logger_start(char *destination)
     print();
     (void) destination;
     analog_channel_start();
+    can_channel_start();
     return;
 }
 
