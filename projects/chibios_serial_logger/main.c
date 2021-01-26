@@ -24,14 +24,15 @@
 #define print() //chprintf((BaseSequentialStream *) &SD2, "%s\r\n", __FUNCTION__)
 #define exit() chThdExit((msg_t)NULL);
 
-op_res_t chibios_serial_logger_init(void);
-void chibios_serial_logger_start(char *destination);
-void chibios_serial_logger_stop(void);
-op_res_t chibios_serial_logger_write(data_t *data);
-void chibios_serial_logger_wait(void);
-void chibios_serial_logger_signal(void);
-void chibios_serial_logger_lock(void);
-void chibios_serial_logger_unlock(void);
+op_res_t chibios_fsae_logger_init(void);
+void chibios_fsae_logger_start(char *destination);
+void chibios_fsae_logger_stop(void);
+op_res_t chibios_fsae_logger_write(data_t *data);
+void chibios_fsae_logger_wait(void);
+void chibios_fsae_logger_signal(void);
+void chibios_fsae_logger_lock(void);
+void chibios_fsae_logger_unlock(void);
+void register_channels(base_logger_t *logger_ptr);
 
 static data_buffer_t write_buffer;
 
@@ -39,22 +40,22 @@ static data_buffer_t write_buffer;
 
 static base_channel_t *channels[NO_OF_CHANNELS];
 
-static char chibios_serial_logger_destination[20] = "chibi_serial_stream";
+static char chibios_fsae_logger_destination[20] = "chibios_fsae_logger";
 
 base_logger_t logger = {
-    ._init = chibios_serial_logger_init,
-    ._start = chibios_serial_logger_start,
-    ._stop = chibios_serial_logger_stop,
-    ._write = chibios_serial_logger_write,
-    ._wait = chibios_serial_logger_wait,
-    ._signal = chibios_serial_logger_signal,
-    ._lock = chibios_serial_logger_lock,
-    ._unlock = chibios_serial_logger_unlock,
+    ._init = chibios_fsae_logger_init,
+    ._start = chibios_fsae_logger_start,
+    ._stop = chibios_fsae_logger_stop,
+    ._write = chibios_fsae_logger_write,
+    ._wait = chibios_fsae_logger_wait,
+    ._signal = chibios_fsae_logger_signal,
+    ._lock = 0,
+    ._unlock = 0,
     .status = 0,
     .registered_channels = 0,
     .channels = channels,
     .no_channels = NO_OF_CHANNELS,
-    .destination = chibios_serial_logger_destination,
+    .destination = chibios_fsae_logger_destination,
     .write_buffer = &write_buffer
 };
 
@@ -65,6 +66,8 @@ thread_t *logger_thread;
 static THD_FUNCTION(LoggerThread, arg);
 
 binary_semaphore_t write_available;
+
+SerialConfig serial_cfg = { .speed = 115200 };
 
 /*
  * Application entry point.
@@ -82,20 +85,11 @@ int main(void)
     halInit();
     chSysInit();
 
-    /*
-   * Activates the serial driver 2 using the driver default configuration.
-   */
-    SerialConfig serial_cfg = {
-        .speed = 115200};
-    sdStart(&SD2, &serial_cfg);
-
     logger_init(&logger, NO_OF_CHANNELS);
-    analog_channel_register(&logger);
-    can_channel_register(&logger);
-
+    register_channels(&logger);
 
     /*
-    * Creates application thread and initialize semaphore.
+    * Initialize semaphore and creates application thread.
     */
     chBSemObjectInit(&write_available, false);
     logger_thread = chThdCreateStatic(loggerThread, sizeof(loggerThread), NORMALPRIO, LoggerThread, NULL);
@@ -108,34 +102,32 @@ int main(void)
     }
 }
 
-op_res_t chibios_serial_logger_init(void)
+op_res_t chibios_fsae_logger_init(void)
 {
-    print();
+    /* Activates the serial driver 2. */
+    sdStart(&SD2, &serial_cfg);
+    /* Initialize acquisition channels */
     analog_channel_init();
     can_channel_init();
     return SUCCESS;
 }
 
-void chibios_serial_logger_start(char *destination)
+void chibios_fsae_logger_start(char *destination)
 {
-    print();
     (void) destination;
     analog_channel_start();
     can_channel_start();
     return;
 }
 
-void chibios_serial_logger_stop(void)
+void chibios_fsae_logger_stop(void)
 {
-    print();
     return;
 }
 
-op_res_t chibios_serial_logger_write(data_t *data)
+op_res_t chibios_fsae_logger_write(data_t *data)
 {
-    print();
-
-    chprintf((BaseSequentialStream *)&SD2, "channel %d, %s: \r\n", data->id, logger.channels[INDEX_OF(data->id)]->name);
+    chprintf((BaseSequentialStream *)&SD2, "%ld ms channel %d, %s: \r\n", TIME_I2MS(chVTGetSystemTime()), data->id, logger.channels[INDEX_OF(data->id)]->name);
     for (int i = 0; i < data->size; i += 2)
     {
         chprintf((BaseSequentialStream *)&SD2, "%d\t", data->data[i] + (data->data[i+1] << 8));
@@ -149,30 +141,21 @@ op_res_t chibios_serial_logger_write(data_t *data)
     return SUCCESS;
 }
 
-void chibios_serial_logger_wait(void)
+void chibios_fsae_logger_wait(void)
 {
-    print();
     chBSemWait(&write_available);
     return;
 }
 
-void chibios_serial_logger_signal(void)
+void chibios_fsae_logger_signal(void)
 {
-    print();
     chBSemSignalI(&write_available);
     return;
 }
 
-void chibios_serial_logger_lock(void)
-{
-    print();
-    return;
-}
-
-void chibios_serial_logger_unlock(void)
-{
-    print();
-    return;
+void register_channels(base_logger_t *logger_ptr) {
+    analog_channel_register(logger_ptr);
+    can_channel_register(logger_ptr);
 }
 
 static THD_FUNCTION(LoggerThread, arg)
@@ -180,6 +163,6 @@ static THD_FUNCTION(LoggerThread, arg)
     (void)arg;
 
     chRegSetThreadName("logger_thread");
-    logger_start(&logger, chibios_serial_logger_destination);
+    logger_start(&logger, chibios_fsae_logger_destination);
     exit();
 }

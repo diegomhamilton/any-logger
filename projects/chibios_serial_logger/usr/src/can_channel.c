@@ -86,6 +86,8 @@ void can_channel_register(base_logger_t *logger) {
 void can_channel_start(void) {
     channel_active = true;
     chThdCreateStatic(can_rx_wa, sizeof(can_rx_wa), NORMALPRIO + 7, can_rx, NULL);
+    /* The transmitter thread is started only for test purposes and should not be included in a final application 
+     * on a physical network */
     chThdCreateStatic(can_tx_wa, sizeof(can_tx_wa), NORMALPRIO + 7, can_tx, NULL);
 }
 
