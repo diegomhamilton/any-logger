@@ -14,14 +14,14 @@ static const CANConfig cancfg = {
 
 static base_logger_t *logger_ptr;
 static base_channel_t can_channel;
-static char can_channel_name[7] = "can_ch";
+static char can_channel_name[7] = "ch_can";
 
 static volatile op_res_t can_message_written = SUCCESS;
 static volatile op_res_t channel_active = false;
 static CANRxFrame rxmsg;
 
 static void write_callback(uint8_t *data) {
-    if (data == (uint8_t *)&rxmsg) {
+    if (data == (uint8_t *)&rxmsg.data16[0]) {
       can_message_written = SUCCESS;
     }
     else {
@@ -46,7 +46,7 @@ static THD_FUNCTION(can_rx, p) {
         while ((canReceive(&CAND1, CAN_ANY_MAILBOX, &rxmsg, TIME_IMMEDIATE) == MSG_OK) && (can_message_written == SUCCESS)) {
             can_message_written = FAIL;
             if (logger_ptr->status == RUNNING)
-              logger_write_async(logger_ptr, can_channel.id, (uint8_t *)&rxmsg, sizeof(CANRxFrame), write_callback);
+              logger_write_async(logger_ptr, can_channel.id, (uint8_t *)&rxmsg.data16, sizeof(uint16_t), write_callback);
         }
     }
     chEvtUnregister(&CAND1.rxfull_event, &el);
@@ -65,10 +65,12 @@ static THD_FUNCTION(can_tx, p) {
     txmsg.EID = 0x01234567;
     txmsg.RTR = CAN_RTR_DATA;
     txmsg.DLC = 8;
-    txmsg.data32[0] = 0x55AA55AA;
-    txmsg.data32[1] = 0x00FF00FF;
+    txmsg.data16[1] = 0x0;
+    txmsg.data16[2] = 0x0;
+    txmsg.data16[3] = 0x0;
 
     while (channel_active == true) {
+        txmsg.data16[0] = TIME_I2S(chVTGetSystemTime());
         canTransmit(&CAND1, CAN_ANY_MAILBOX, &txmsg, TIME_MS2I(100));
         chThdSleepMilliseconds(500);
     }

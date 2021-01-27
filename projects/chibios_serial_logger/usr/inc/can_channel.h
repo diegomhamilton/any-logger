@@ -6,6 +6,6 @@
 
 void can_channel_init(void);
 void can_channel_register(base_logger_t *logger);
-void can_channel_start(void); 
+void can_channel_start(void);
 
 #endif  /* _CAN_H */

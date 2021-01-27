@@ -48,7 +48,7 @@ static const uint16_t half_buffer_size = sizeof(adcsample_t) * ANALOG_BUFFER_DEP
 static void adc_conv_callback(ADCDriver *adcp) {
     if (adcIsBufferComplete(adcp)) {
         /* Handle DMA full buffer complete */
-        logger_write_async(logger_ptr, analog_channel.id, (uint8_t *) &analog_channel_buffer[half_buffer_size], half_buffer_size, 0);
+        logger_write_async(logger_ptr, analog_channel.id, (uint8_t *) &analog_channel_buffer[half_buffer_size/sizeof(adcsample_t)], half_buffer_size, 0);
     } else {
         /* Handle DMA half buffer complete */
         logger_write_async(logger_ptr, analog_channel.id, (uint8_t *) &analog_channel_buffer[0], half_buffer_size, 0);

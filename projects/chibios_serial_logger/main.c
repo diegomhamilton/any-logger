@@ -20,6 +20,7 @@
 #include "chprintf.h"
 #include "analog_channel.h"
 #include "can_channel.h"
+#include "dac_test.h"
 
 #define print() //chprintf((BaseSequentialStream *) &SD2, "%s\r\n", __FUNCTION__)
 #define exit() chThdExit((msg_t)NULL);
@@ -94,6 +95,9 @@ int main(void)
     chBSemObjectInit(&write_available, false);
     logger_thread = chThdCreateStatic(loggerThread, sizeof(loggerThread), NORMALPRIO, LoggerThread, NULL);
     
+    /* Start operation of DAC for testing Analog Channels */
+    dac_start();
+
     /* Blinker main thread to verify logger functionality */
     while (true)
     {
@@ -127,14 +131,10 @@ void chibios_fsae_logger_stop(void)
 
 op_res_t chibios_fsae_logger_write(data_t *data)
 {
-    chprintf((BaseSequentialStream *)&SD2, "%ld ms channel %d, %s: \r\n", TIME_I2MS(chVTGetSystemTime()), data->id, logger.channels[INDEX_OF(data->id)]->name);
+    chprintf((BaseSequentialStream *)&SD2, "CHANNEL %d (%s): ", data->id, logger.channels[INDEX_OF(data->id)]->name);
     for (int i = 0; i < data->size; i += 2)
     {
-        chprintf((BaseSequentialStream *)&SD2, "%d\t", data->data[i] + (data->data[i+1] << 8));
-        if (((i+2) % 8) == 0) {
-            sdPut(&SD2, '\r');
-            sdPut(&SD2, '\n');
-        }
+        chprintf((BaseSequentialStream *)&SD2, "%d,", data->data[i] + (data->data[i+1] << 8));
     }
     chprintf((BaseSequentialStream *)&SD2, "\r\n");
 
