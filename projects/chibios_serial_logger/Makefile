@@ -113,6 +113,7 @@ include $(CHIBIOS)/tools/mk/autobuild.mk
 include $(CHIBIOS)/test/lib/test.mk
 include $(CHIBIOS)/test/rt/rt_test.mk
 include $(CHIBIOS)/test/oslib/oslib_test.mk
+include $(CHIBIOS)/os/various/fatfs_bindings/fatfs.mk
 include ../../logger.mk
 include ./usr/user.mk
 

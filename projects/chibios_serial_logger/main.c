@@ -16,8 +16,9 @@
 
 #include "ch.h"
 #include "hal.h"
-#include "logger.h"
 #include "chprintf.h"
+#include "sd.h"
+#include "logger.h"
 #include "analog_channel.h"
 #include "can_channel.h"
 
@@ -106,6 +107,9 @@ op_res_t chibios_fsae_logger_init(void)
 {
     /* Activates the serial driver 2. */
     sdStart(&SD2, &serial_cfg);
+    if (sd_init() == SUCCESS) {
+        sd_start();
+    }
     /* Initialize acquisition channels */
     analog_channel_init();
     can_channel_init();
