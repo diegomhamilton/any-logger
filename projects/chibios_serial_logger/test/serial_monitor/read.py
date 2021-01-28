@@ -10,6 +10,7 @@ from struct import unpack
 NO_ANALOG_CHANNELS = 4
 ANALOG_SAMPLING_FREQUENCY = 200.0
 DATA_DISPLAYED = 100
+channel_titles = {0 : "Battery Voltage", 1 : "APPS 1", 2 : "BSE", 3 : "APPS 2"}
 
 if len(sys.argv) == 1:
     baudrate = 115200
@@ -32,7 +33,7 @@ def animate(i):
     
     if "can" in packet_name:
         time_lbl[0] = list(buffer)[0]
-        fig.suptitle(f'{packet_name}: {time_lbl[0]} seconds\n{title[0]} Voltages')
+        fig.suptitle(f'{packet_name}: {time_lbl[0]} seconds', ha='left')
     elif "analog" in packet_name:
         title[0] = packet_name
         for i in range(NO_ANALOG_CHANNELS):
@@ -41,12 +42,11 @@ def animate(i):
     # Draw x and y lists
     curr_time = float(time_lbl[0])
     xs = np.linspace(start=(curr_time - float(DATA_DISPLAYED)/ANALOG_SAMPLING_FREQUENCY), stop = curr_time, num=DATA_DISPLAYED)
-    print(xs)
     for i, ax in enumerate(axs.flatten()):
         ys = data[i][-1*DATA_DISPLAYED::]
         ax.clear()
         ax.plot(xs, ys)
-        ax.set_ylabel(f"Channel {i+1} Voltage")
+        ax.title.set_text(f"{channel_titles[i]}")
         # Format plot
         # plt.xticks(rotation=45, ha='right')
         ax.axis([xs[0], xs[-1], -20, 5000]) #Use for arbitrary number of trials
