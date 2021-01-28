@@ -71,7 +71,7 @@ static const DACConversionGroup dacgrpcfg1 = {
  * GPT6 configuration.
  */
 static const GPTConfig gpt6cfg1 = {
-  .frequency    = 3600U,
+  .frequency    = 360U,
   .callback     = NULL,
   .cr2          = TIM_CR2_MMS_1,    /* MMS = 010 = TRGO on Update Event.    */
   .dier         = 0U
