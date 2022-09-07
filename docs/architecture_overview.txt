@@ -1,0 +1,23 @@
+@startuml
+actor       "User Code"         as User order 1
+actor       "Channel 1"         as CH1  order 2
+'actor       "Channel 2"         as CH2  order 3
+participant "OS specific\nLogger code" as OSAL order 4
+participant AnyLogger           as AL   order 5
+database    SD                  as SD   order 6
+
+User -> CH1: Configure
+'User -> CH2: Configure
+User -> OSAL: Start Logging (with: Channel 1)
+
+group Logging [Logging]
+    CH1  -> OSAL: write data
+    OSAL -> AL: queue data to be written
+    AL   -> AL: Pop data buffer
+    AL   -> SD: Write buffer to disk
+end
+
+User -> OSAL: Stop Logging
+OSAL -> AL: Stop
+AL -> SD: Check files integrity
+@enduml
