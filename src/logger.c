@@ -15,29 +15,36 @@ base_logger_t *logger_init(base_logger_t *logger, uint8_t no_channels) {
     return logger;
 }
 
-channel_id_t register_new_channel(base_logger_t *logger) {
-    uint64_t regchan = logger->registered_channels;
-    uint8_t temp = 0;
-    channel_id_t id = 0;
+static channel_id_t register_new_channel(base_logger_t *logger) {
+    uint8_t limit = logger->no_channels;
 
-    do {
-        temp = (regchan >> id) & 0x01;
-        id += 1;
-    } while(temp != 0 || id == logger->no_channels);
+    if (limit > 64) {
+        limit = 64;
+    }
 
-    return id;
+    for (channel_id_t id = 1; id <= limit; id++) {
+        if ((logger->registered_channels & (1ULL << INDEX_OF(id))) == 0) {
+            return id;
+        }
+    }
+
+    return 0;
 }
 
 base_channel_t *logger_register(base_logger_t *logger, char *name, base_channel_t *channel) {
     /* Cannot register channel while logger is running, returns NULL */
-    if (logger->status != IDLE) {
+    if (!logger || !channel || logger->status != IDLE) {
         return 0;
     }
 
     channel->id = register_new_channel(logger);
-    logger->registered_channels |= 1 << INDEX_OF(channel->id);
+    if (channel->id == 0) {
+        return 0;
+    }
+
+    logger->registered_channels |= 1ULL << INDEX_OF(channel->id);
     channel->name = name;
-    if (channel->id < logger->no_channels) {
+    if (channel->id <= logger->no_channels) {
         logger->channels[INDEX_OF(channel->id)] = channel;
     }
 
@@ -54,7 +61,7 @@ void logger_unregister(base_logger_t *logger, base_channel_t *channel) {
     }
 
     /* Clear channel from registered_channels */
-    logger->registered_channels &= ~(1 >> channel->id);
+    logger->registered_channels &= ~(1ULL << INDEX_OF(channel->id));
     /* Set channel to null in logger's channel pointers array */
     (logger->channels)[INDEX_OF(channel->id)] = 0;
     /* Set channel id to zero */
@@ -62,7 +69,6 @@ void logger_unregister(base_logger_t *logger, base_channel_t *channel) {
 }
 
 void logger_write_async(base_logger_t *logger, channel_id_t id, uint8_t *data, uint16_t size, signal_cb_t cb) {
-    int8_t res = 0;
     data_t temp = {
         .data = data,
         .id = id,
@@ -71,7 +77,7 @@ void logger_write_async(base_logger_t *logger, channel_id_t id, uint8_t *data, u
     };
 
     if(logger->_lock) logger->_lock();
-    buffer_push(*(logger->write_buffer), temp, res);
+    cb_push(*(logger->write_buffer), temp);
     if(logger->_unlock) logger->_unlock();
     //TODO: Add condition to only call _signal() if push was successful
     logger->_signal();
@@ -80,9 +86,9 @@ void logger_write_async(base_logger_t *logger, channel_id_t id, uint8_t *data, u
 static void perform_write(base_logger_t *logger) {
     data_t temp;
     
-    if(!is_buffer_empty(*(logger->write_buffer))) {
+    if(!cb_empty(*(logger->write_buffer))) {
         if(logger->_lock) logger->_lock();
-        buffer_pop(*(logger->write_buffer), temp);
+        cb_pop(*(logger->write_buffer), temp);
         if(logger->_unlock) logger->_unlock();
 
         if (logger->_write(&temp) == SUCCESS) {
@@ -103,7 +109,7 @@ static void logger_loop(base_logger_t *logger) {
 
 void logger_start(base_logger_t *logger, char *destination) {
     if (logger->status == IDLE) {
-        buffer_reset(*(logger->write_buffer));
+        cb_init(*(logger->write_buffer), data_t, WRITE_BUFFER_SIZE);
         logger->destination = destination;
         if (logger->_start) logger->_start(destination);
         logger->status = RUNNING;

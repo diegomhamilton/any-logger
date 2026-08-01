@@ -36,7 +36,7 @@ typedef struct data
     signal_cb_t write_cb;
 } data_t;
 
-typedef BUFFER_STRUCT_DEF(data_t, uint8_t, WRITE_BUFFER_SIZE) data_buffer_t;
+typedef circular_buffer_struct(data_t, WRITE_BUFFER_SIZE) data_buffer_t;
 
 #define base_logger_functions                                                \
     /* Initialize logger. Must set the logger to IDLE if succesful.          \
