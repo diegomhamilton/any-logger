@@ -1,6 +1,11 @@
 # any-logger
 Provides an abstract logger implementation to be used in C applications.
 
+## License
+
+This project is licensed under the GNU Lesser General Public License v3.0
+or later (LGPL-3.0-or-later). See [LICENSE](LICENSE) for details.
+
 ## Project Notes
 
 - Current planning lives in `docs/project_plan.md`.
