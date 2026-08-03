@@ -28,6 +28,30 @@ Evidence must identify a repository path and line, a ChibiOS version/commit and
 API location, or a reproducible test result. An unverified conclusion is an
 assumption, not a finding.
 
+## Artifact Git policy
+
+Serori keeps artifacts flat under the repository's `artifacts/` directory.
+Git is the version-control system for those files and should record artifact
+changes in the same commit or review as the source, configuration, and tests
+that produced them.
+
+Accepted artifacts must be treated as immutable. If an artifact changes, write
+a new artifact with a new content-derived ID and reference the previous record
+using `inputs`; use `supersedes` when it replaces an earlier artifact. Do not
+silently overwrite an accepted artifact. Git history remains authoritative for
+authorship, review, timestamps, branching, and rollback, while the artifact ID
+is only a content identity.
+
+Use only the forward `supersedes` link on the replacement. Retain
+superseded artifacts in Git for auditability and reproducibility, but exclude
+them from the active artifact set when selecting the latest accepted result.
+
+Retained artifacts should contain enough evidence to reproduce the result,
+including relevant file hashes, commands or test results, and the exact
+ChibiOS revision. Intermediate session outputs may remain uncommitted or be
+removed when no longer useful; canonical reviewed or accepted artifacts should
+be committed.
+
 ## Canonical inputs and outputs
 
 ### Inputs

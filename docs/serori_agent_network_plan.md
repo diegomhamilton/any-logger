@@ -99,6 +99,31 @@ Evidence entries should point to a repository path and line, a versioned
 documentation location, or a test result. Claims without evidence are labelled
 as assumptions, not facts.
 
+### Artifact version-control policy
+
+Artifacts are stored in one flat, repository-local `artifacts/` directory. Git
+is the system of record for artifact history: artifact files are reviewed,
+committed, and branched together with the source, configuration, and tests they
+describe. Generated session output may be kept there while a task is active,
+but only reproducible, useful results should be retained and committed.
+
+An accepted artifact is immutable. A changed conclusion, new evidence set, or
+rerun produces a new artifact with a new content-derived `artifact.id`; it does
+not overwrite the accepted file. The new artifact references its predecessors
+through `inputs` and, when replacing one, `supersedes`. Optional `milestone` and
+`session_id` fields provide grouping without creating milestone or session
+subdirectories. Git commit history supplies the authoritative timestamp,
+author, review, and rollback record.
+
+Keep lineage append-only: record `supersedes` on the new artifact, but do not
+also write `superseded_by` onto the old one. Superseded artifacts remain in Git
+for audit and reproducibility; artifact consumers should ignore them when
+building the active set and select the latest accepted non-superseded result.
+
+Artifact IDs identify content; they are not substitutes for Git commits. An
+artifact is considered reproducible only when its evidence records the relevant
+source/configuration hashes, tool inputs, and exact ChibiOS revision.
+
 ## 5. Network rules
 
 1. **Scope before code.** Intake must identify target MCU/board, ChibiOS

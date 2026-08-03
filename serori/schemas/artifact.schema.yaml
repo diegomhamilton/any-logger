@@ -16,5 +16,7 @@ properties:
       risks: {type: array}
       evidence: {type: array}
       status: {enum: [draft, reviewed, accepted, rejected]}
+      milestone: {type: string}
+      session_id: {type: string}
+      supersedes: {type: string}
   data: {type: object}
-
