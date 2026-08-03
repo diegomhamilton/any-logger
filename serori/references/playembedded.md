@@ -47,7 +47,8 @@ Source: [C pointers](https://playembedded.org/demystifying-c-pointers/#24_Memory
 
 ## Version caveat
 
-The local checkout currently reports ChibiOS HAL 9.1.0 and kernel 8.0.0. Article examples may use
-older releases, stale trace-mask values, illustrative typos, or different configuration. Preserve
-article claims as `version-dependent` until local headers/source confirm them.
-
+The local checkout exposes HAL component version 9.1.0. That is not the overall ChibiOS release
+number: use ChibiOS 21.11 as the release-line reference and capture the exact Git tag/commit during
+intake. Article examples may use older releases, stale trace-mask values, illustrative typos, or
+different configuration. Preserve article claims as `version-dependent` until local headers/source
+confirm them.

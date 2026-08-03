@@ -326,7 +326,7 @@ debugging, optimization-aware validation, stack watermarking, pointer bounds, `m
 allocation failure, and fragmentation.
 
 These sources are conceptual and version-qualified. The local checkout is authoritative for exact
-symbols and semantics: HAL 9.1.0, kernel 8.0.0, and revision
+symbols and semantics: ChibiOS 21.11 release line, HAL component 9.1.0, and the local revision
 `fd2e59c34878b1ef93ef5358f11fb5cc830027ff`. Article-era claims such as trace-mask values,
 thread-state names, scheduling behavior, and API signatures must be classified as
 `version-dependent` until verified against that checkout.
@@ -336,7 +336,7 @@ The generated package is available at:
 ```text
 serori/
   skills/                    # 11 provider-neutral agent skills
-  references/                # PLAY Embedded, ChibiOS 9.1.0, and pattern cards
+  references/                # PLAY Embedded, ChibiOS 21.11/HAL 9.1.0, and pattern cards
   schemas/                   # artifact/task contracts
   scripts/                   # intake, map, evidence, review, and safety stubs
   adapters/                  # ChatGPT/Codex and Claude Code manifests

@@ -1,4 +1,8 @@
-# ChibiOS local reference: HAL 9.1.0 / kernel 8.0.0
+# ChibiOS 21.11 reference: HAL 9.1.0 component
+
+The `9.1.0` label is the ChibiOS/HAL subsystem version, not the overall ChibiOS release.
+The release line is ChibiOS 21.11. The exact patch release and checkout revision must be
+captured by intake; do not infer them from this filename alone.
 
 Evidence paths are relative to `libs/ChibiOS`; the exact Git revision must be captured by intake.
 
@@ -29,4 +33,3 @@ Inspect the selected revision before classifying calls:
 
 Treat `halconf.h`, `mcuconf.h`, `chconf.h`, board, startup, linker, and Makefile files as a
 compatibility bundle. Do not edit shared ChibiOS sources to fix project configuration.
-
