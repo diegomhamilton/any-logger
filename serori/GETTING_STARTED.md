@@ -4,25 +4,22 @@ Serori is the provider-neutral ChibiOS firmware analysis package under [`serori/
 It provides skills, references, artifact schemas, deterministic inspection scripts, and adapters
 for ChatGPT/Codex and Claude Code.
 
-## ChibiOS version terminology
+## ChibiOS version 
 
-- `21.11` is the ChibiOS release line.
-- `9.1.0` is the ChibiOS/HAL component version used by that release line.
-- The local HAL header reports `CH_HAL_VERSION "9.1.0"`.
+- Overal ChibiOS version from release line, e.g. 2026 latest is `21.11`
+- Do not mix with ChibiOS/HAL component version reported by local HAL header, e.g `CH_HAL_VERSION "9.1.0"` the used by ChbiOS `21.11` release.
 - The exact supported dependency must be identified by a ChibiOS tag or Git commit.
-
-Do not treat `9.1.0` as the overall ChibiOS release. Pin and record the exact 21.11 patch/tag or
-commit before making API or scheduling claims.
-
+- Pin and record the exact ChbiiOS patch/tag or commit before making API or scheduling claims:
 ```bash
 git -C libs/ChibiOS describe --tags --always --dirty
 git -C libs/ChibiOS rev-parse HEAD
 ```
 
 ## Required intake information
+If user does not provide ask them more details about the project and suggest intake information based on user responses to the discovery questions:
 
 - board and MCU;
-- exact ChibiOS 21.11 patch/tag or commit;
+- initialize submodule and select desired ChibiOS version/commit;
 - toolchain;
 - RAM/flash and latency budgets;
 - acquisition rates;
