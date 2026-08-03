@@ -1,0 +1,3 @@
+#!/bin/sh
+echo 'test runner requires an explicit declared test profile; no command executed' >&2
+exit 3
