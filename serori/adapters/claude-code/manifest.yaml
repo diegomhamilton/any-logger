@@ -1,0 +1,7 @@
+package: serori
+provider: claude-code
+canonical_root: ../../
+instruction_source: CLAUDE.md
+artifact_schema: schemas/artifact.schema.yaml
+source_changes_default: false
+

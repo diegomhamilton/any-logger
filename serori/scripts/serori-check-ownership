@@ -1,0 +1,3 @@
+#!/bin/sh
+echo 'ownership checker scaffold: use evidence and repository map; strict static ownership analysis is not yet implemented' >&2
+exit 3

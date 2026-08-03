@@ -1,0 +1,20 @@
+schema_version: 1
+type: object
+required: [artifact, data]
+properties:
+  artifact:
+    type: object
+    required: [id, schema_version, project, created_by, inputs, assumptions, decisions, risks, evidence, status]
+    properties:
+      id: {type: string}
+      schema_version: {type: integer}
+      project: {type: string}
+      created_by: {type: string}
+      inputs: {type: array}
+      assumptions: {type: array}
+      decisions: {type: array}
+      risks: {type: array}
+      evidence: {type: array}
+      status: {enum: [draft, reviewed, accepted, rejected]}
+  data: {type: object}
+
