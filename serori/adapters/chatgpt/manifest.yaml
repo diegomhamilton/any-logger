@@ -1,0 +1,7 @@
+package: serori
+provider: chatgpt-codex
+canonical_root: ../../
+entrypoints: skills/*/SKILL.md
+artifact_schema: schemas/artifact.schema.yaml
+source_changes_default: false
+
